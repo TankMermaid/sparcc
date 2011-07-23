@@ -29,7 +29,7 @@ def Run(counts_file, metric = 'JSsqrt', **kwargs):
     fracs = counts.to_fractions('normalize')
     D     = fracs.dist_mat(metric = metric)
     ## write distance matrix
-    out_file = kwargs.get('out_file', 'sample_dist_ ' + metric +'.out')
+    out_file = kwargs.get('out_file', 'sample_dist_' + metric +'.out')
     D.writetxt(out_file)    
     print 'wrote ' + out_file
     print 'Done!'
