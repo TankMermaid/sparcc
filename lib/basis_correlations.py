@@ -121,6 +121,8 @@ def basis_corr(f, method = 'sparcc', **kwargs):
             if break_flag: break
             V_base, M        = basis_var(f, Var_mat, M = M, excluded = excluded)
             C_base, Cov_base = C_from_V(Var_mat, V_base)
+        if np.max(np.abs(C_base)) > 1.0:
+            V_base, C_base, Cov_base = basis_corr(f, method='clr', **kwargs)    
     elif method == 'csi':  
         p, V_base = f.CSI_test()
         V_base, M        = matrix(V_base).transpose()

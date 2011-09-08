@@ -367,7 +367,7 @@ class Survey_matrix(MatrixDictionary):
         '''
         algo = algo.lower()
         cor_list  = []  # list of cor matrices from different random fractions
-        cov_list  = []  # list of cov matrices from different random fractions
+        var_list  = []  # list of cov matrices from different random fractions
         iter      = kwargs.get('iter',20)  # number of iterations 
         th        = kwargs.get('th',0.1)   # exclusion threshold for iterative sparse algo
         if algo in ['sparcc', 'clr']: 
@@ -376,13 +376,15 @@ class Survey_matrix(MatrixDictionary):
                 fracs                            = self.to_fractions()
                 f, otus, samples                 = fracs.to_compositions()
                 v_sparse, cor_sparse, cov_sparse = f.basis_corr(method = algo, **kwargs)
-                cov_list.append(cov_sparse)
-            cov_array = np.array(cov_list)
-            cov_med = np.median(cov_array,axis = 0) #median covariance
+                var_list.append(np.diag(cov_sparse))
+                cor_list.append(cor_sparse)
+            cor_array = np.array(cor_list)
+            var_med = np.median(var_list,axis = 0) #median covariance
+            cor_med = np.median(cor_array,axis = 0) #median covariance
             ## make correlation and covariance MDs
-            v         = np.diag(cov_med)
-            x,y       = np.meshgrid(v,v)
-            cor_med   = cov_med / x**0.5 /y**0.5
+            x,y     = np.meshgrid(var_med,var_med)
+            cov_med = cor_med * x**0.5 * y**0.5
+            print 'max corr =', np.max(np.abs(cor_med))
             cor  = MatrixDictionary()
             cov  = MatrixDictionary()
             cor.from_matrix(cor_med, otus, otus)
