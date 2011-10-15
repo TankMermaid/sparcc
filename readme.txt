@@ -4,7 +4,7 @@ General Notes:
 ********************************
 - SparCC is mainly used for calculating correlations in compositional data.
 
-- Additionally, it also contains a script for calculating the distance between samples using the JSD metric, its square-root, and many other distance measures.
+- Additionally, it contains a script for calculating the distance between samples using the JSD metric, its square-root, and many other distance measures.
 
 - SparCC has some other useful capabilities (e.g. calculating sample diversity, rank abundance plots, etc'). However, there are no convenience wrappers for these capabilities, and they are not as well tested. If you known your python (especially, object oriented python), and want to use these, take a peek at the MatrixDictionary and SurveyMatrix classes in the 'lib' subdirectory.
 
@@ -17,11 +17,11 @@ General Notes:
 ********************************
 Usage Notes:
 ********************************
-- Scripts in the root SparCC directory called from the terminal command-line either by explicitly calling python (as is done in the usage examples below), or simply as an executable. The later will require having execution permission for these file (e.g. chmod +x SparCC.py).
+- Scripts in the root SparCC directory can be called from the terminal command-line either by explicitly calling python (as is done in the usage examples below), or simply as an executable. The latter will require having execution permission for these file (e.g. chmod +x SparCC.py).
 
 - Help for any one for the scripts in the root SparCC directory is available by typing 'python [script_name] - h' in the command line. e.g.: python SparCC.py -h .
 
-- SparCC is implemented in pure python and requires you to have python (=>2.3, tested with 2.6.6) and numpy (tested with versions 1.4.0 and 1.6.0) installed on your machine.
+- SparCC is implemented in pure python and requires a working version of python (=>2.3, tested with 2.6.6) and numpy (tested with versions 1.4.0 and 1.6.0).
 
 - The optional distance calculations also require the scipy.cluster.hierarchy module from scipy (test with version 0.9.0).
        
