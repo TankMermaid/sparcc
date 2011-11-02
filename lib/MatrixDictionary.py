@@ -490,7 +490,6 @@ class MatrixDictionary(dict):
         Return a MD square distance matrix corresponding to distance between rows
         '''
         import distances
-        from heatmap_clust import clust_data, heatmap_clust
         if transpose: data    = self.transpose()
         else:         data    = self.transpose()
         mat, row_labels, col_labels = data.to_matrix()
