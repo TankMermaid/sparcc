@@ -11,6 +11,50 @@ from numpy import array, zeros, tile, ones, log, corrcoef, var, exp, cov, r_, di
 from numpy.linalg import det, pinv
 
     
+def comp_fractions(counts):
+    '''
+    Covert counts to fraction by randomly drawing from the corresponding posterior 
+    Dirichlet distribution, with a uniform prior.
+    That is, for a vector of counts C, draw the fractions from Dirichlet(C+1).
+    '''
+    from numpy.random.mtrand import dirichlet
+    from Compositions import CompData
+    n,m = np.shape(counts)
+    fracs = np.zeros((n,m))
+    for i in xrange(n): # for each sample
+        C        = counts[i,:]  # counts of each otu in sample
+        a        = C+1          # dirichlet parameters
+        fracs[i,:] = dirichlet(a)
+    return CompData(fracs)
+
+
+def correlation(x, type):
+    '''
+    Return the correlation and p-value matrices between all columns of x.
+    Type = ['pearson','spearman','kendall']
+    '''
+    import scipy.stats as stats
+    type = type.lower()
+    if type not in set(['pearson', 'kendall', 'spearman']): raise IOError('Specified correlation type is not supported.')
+    if type == 'pearson'  : corr_fun = stats.pearsonr
+    elif type == 'kendall': corr_fun = stats.kendalltau
+    elif type == 'spearman' : corr_fun = stats.spearmanr
+    m,n = np.shape(x)
+    c_mat = np.zeros((n, n))
+    p_mat = np.zeros((n, n))
+    for i in xrange(n):
+        for j in xrange(i, n):
+            if i == j: 
+                c_mat[i][i] = 1
+                p_mat[i][i] = 1
+                continue
+            c_temp, p_temp = corr_fun(x[:,i], x[:,j])
+            c_mat[i][j] = c_temp
+            c_mat[j][i] = c_temp
+            p_mat[i][j] = p_temp
+            p_mat[j][i] = p_temp
+    return c_mat, p_mat
+
 
 def append_indices(excluded,exclude):
     '''
@@ -129,4 +173,70 @@ def basis_corr(f, method = 'sparcc', **kwargs):
         C_base, Cov_base = C_from_V(Var_mat, V_base)
     return V_base, C_base, Cov_base 
 
+
+def main(counts, algo = 'SparCC', **kwargs):
+    '''
+    Compute correlations between all components of counts matrix.
     
+    Parameters
+    ----------
+    counts : array_like
+        2D array of counts. Columns are counts, rows are samples. 
+    algo : str, optional (default 'SparCC')
+        The algorithm to use for computing correlation.
+        Supported values: SparCC, clr, pearson, spearman, kendall
+
+    Returns
+    -------
+    cor_med: array
+        Estimated correlation values.
+    cov_med: array
+        Estimated covariance matrix if algo in {SparCC, clr},
+        None otherwise.
+              
+    =======   ============ =======  ================================================
+    kwarg     Accepts      Default  Desctiption
+    =======   ============ =======  ================================================
+    iter      int          20       number of estimation iteration to average over.
+    oprint    bool         True     print iteration progress?
+    th        0<th<1       0.1      exclusion threshold for SparCC.
+    xiter     int          10       number of exclusion iterations for sparcc.
+    =======   ============          ================================================
+    '''
+    algo = algo.lower()
+    cor_list  = []  # list of cor matrices from different random fractions
+    var_list  = []  # list of cov matrices from different random fractions
+    oprint    = kwargs.pop('oprint',True)
+    iter      = kwargs.pop('iter',20)  # number of iterations 
+    th        = kwargs.pop('th',0.1)   # exclusion threshold for iterative sparse algo
+    if algo in ['sparcc', 'clr']: 
+        for i in range(iter):
+            if oprint: print '\tRunning iteration ' + str(i)
+            fracs = comp_fractions(counts)
+            v_sparse, cor_sparse, cov_sparse = fracs.basis_corr(method = algo, **kwargs)
+            var_list.append(np.diag(cov_sparse))
+            cor_list.append(cor_sparse)
+        cor_array = np.array(cor_list)
+        var_med = np.median(var_list,axis = 0) #median covariance
+        cor_med = np.median(cor_array,axis = 0) #median covariance
+        x,y     = np.meshgrid(var_med,var_med)
+        cov_med = cor_med * x**0.5 * y**0.5
+    elif algo in ['pearson', 'kendall', 'spearman']:
+        for i in range(iter):
+            if oprint: print '\tRunning iteration ' + str(i)
+            fracs = comp_fractions(counts)               
+            cor_mat, pval = correlation(fracs, algo)
+            cor_list.append(cor_mat)
+        cor_array   = np.array(cor_list)
+        cor_med = np.median(cor_array,axis = 0) #median correlation
+        cov_med = None 
+    return cor_med, cov_med 
+
+
+if __name__ == '__main__':
+    x = np.arange(1,10)
+    y = np.ones(len(x))
+    X = np.c_[x,y]
+    X = np.random.rand(200,5)
+    cor,cov =  main(X, 'kendall', oprint=0)  
+    print cor      

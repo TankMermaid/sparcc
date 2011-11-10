@@ -362,45 +362,21 @@ class Survey_matrix(MatrixDictionary):
         if show: plt.show()
         
         
-    def basis_corr(self, algo = 'SparCC', **kwargs):
+    def basis_corr(self, algo='SparCC', **kwargs):
         '''
         '''
-        algo = algo.lower()
-        cor_list  = []  # list of cor matrices from different random fractions
-        var_list  = []  # list of cov matrices from different random fractions
-        iter      = kwargs.get('iter',20)  # number of iterations 
-        th        = kwargs.get('th',0.1)   # exclusion threshold for iterative sparse algo
-        if algo in ['sparcc', 'clr']: 
-            for i in range(iter):
-                print 'Running iteration ' + str(i)
-                fracs                            = self.to_fractions()
-                f, otus, samples                 = fracs.to_compositions()
-                v_sparse, cor_sparse, cov_sparse = f.basis_corr(method = algo, **kwargs)
-                var_list.append(np.diag(cov_sparse))
-                cor_list.append(cor_sparse)
-            cor_array = np.array(cor_list)
-            var_med = np.median(var_list,axis = 0) #median covariance
-            cor_med = np.median(cor_array,axis = 0) #median covariance
-            ## make correlation and covariance MDs
-            x,y     = np.meshgrid(var_med,var_med)
-            cov_med = cor_med * x**0.5 * y**0.5
-            print 'max corr =', np.max(np.abs(cor_med))
-            cor  = MatrixDictionary()
+        import basis_correlations as basecor 
+        counts_t, otus, samples = self.to_matrix()
+        counts = counts_t.transpose()
+        cor_med, cov_med = basecor.main(counts, algo=algo, **kwargs)
+        cor  = MatrixDictionary()
+        
+        cor.from_matrix(cor_med, otus, otus)
+        if cov_med is None:
+            cov = None
+        else:
             cov  = MatrixDictionary()
-            cor.from_matrix(cor_med, otus, otus)
-            cov.from_matrix(cov_med, otus, otus)    
-        elif algo in ['pearson', 'kendall', 'spearman']:
-            for i in range(iter):
-                print 'Running iteration ' + str(i)
-                fracs                   = self.to_fractions()               
-                cor_mat, pval           = fracs.correlation(type = algo)
-                cor_temp, otus1, otus2  = cor_mat.to_matrix()
-                cor_list.append(cor_temp)
-            cor_array   = np.array(cor_list)
-            cor_med = np.median(cor_array,axis = 0) #median correlation
-            cor  = MatrixDictionary()
-            cor.from_matrix(cor_med, otus1, otus2)
-            cov = None 
+            cov.from_matrix(cov_med, otus, otus)  
         return cor, cov
         
     

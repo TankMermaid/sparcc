@@ -15,7 +15,7 @@ def kwargs_callback(option, opt, value, parser,**kwargs):
     return d
   
 
-def RunSparCC(counts_file, algo = 'SparCC', **kwargs):
+def RunSparCC(counts_file, algo='SparCC', **kwargs):
     ## read counts data
     print 'reading data'
     temp   = SM()
@@ -23,14 +23,14 @@ def RunSparCC(counts_file, algo = 'SparCC', **kwargs):
     
     ## Calculate correlations between components using SparCC
     print 'computing correlations'
-    cor, cov = counts.basis_corr(algo = algo , **kwargs)
+    cor, cov = counts.basis_corr(algo=algo , **kwargs)
     
     ## write out results
     print 'writing results'
     cor_file = kwargs.get('cor_file', 'cor_mat_' + algo + '.out')
     cor.writetxt(cor_file)
     print 'wrote ' + cor_file
-    if cov:
+    if cov is not None:
         cov_file = kwargs.get('cov_file', 'cov_mat_' + algo + '.out')
         cov.writetxt(cov_file)
         print 'wrote ' + cov_file
