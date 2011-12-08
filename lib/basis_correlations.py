@@ -11,21 +11,51 @@ from numpy import array, zeros, tile, ones, log, corrcoef, var, exp, cov, r_, di
 from numpy.linalg import det, pinv
 
     
-def comp_fractions(counts):
+def comp_fractions(counts, method='dirichlet', **kwargs):
     '''
-    Covert counts to fraction by randomly drawing from the corresponding posterior 
-    Dirichlet distribution, with a uniform prior.
-    That is, for a vector of counts C, draw the fractions from Dirichlet(C+1).
+    Covert counts to fraction using given method.
+    
+    Parameters
+    ----------
+    method : string {dirichlet (default) | normalize | pseudo}
+        dirichlet - randomly draw from the corresponding posterior 
+                    Dirichlet distribution with a uniform prior.
+                    That is, for a vector of counts C, 
+                    draw the fractions from Dirichlet(C+1). 
+        normalize - simply divide each row by its sum.
+        pseudo    - add given pseudo count (defualt 1) to each count and
+                    do simple normalization.
+
+
+    KW Arguments
+    ------------
+    p_counts : int/float (default 1)
+        The value of the pseudo counts to add to all counts.
+        Used only if method is dirichlet
+    
+
+    Returns
+    -------
+    fracs: CompData
+        Component fractions as a compositional data object.
     '''
-    from numpy.random.mtrand import dirichlet
     from Compositions import CompData
-    n,m = np.shape(counts)
-    fracs = np.zeros((n,m))
-    for i in xrange(n): # for each sample
-        C        = counts[i,:]  # counts of each otu in sample
-        a        = C+1          # dirichlet parameters
-        fracs[i,:] = dirichlet(a)
-    return CompData(fracs)
+    n,m   = np.shape(counts)
+    if method == 'dirichlet':
+        from numpy.random.mtrand import dirichlet
+        fracs = CompData( np.ones((n,m)) )
+        method = method.lower()
+        for i in xrange(n): # for each sample
+            C        = counts[i,:]  # counts of each otu in sample
+            a        = C+1          # dirichlet parameters
+            fracs[i,:] = dirichlet(a)
+    elif method == 'normalize':
+            temp   = counts.T
+            fracs = CompData( (temp/temp.sum()).T )
+    elif method is 'pseudo': 
+            p_counts = kwargs.pop('p_counts',1)
+            fracs = comp_fractions(counts+p_counts, method='normalize')
+    return fracs
 
 
 def correlation(x, type):
@@ -65,7 +95,7 @@ def append_indices(excluded,exclude):
     return inds
     
 
-def exclude_pairs(C, M, th = 0.1, excluded = None):
+def exclude_pairs(C, M, th=0.1, excluded=None):
     '''
     Exclude pairs with high correlations.
     '''
@@ -139,7 +169,7 @@ def C_from_V(Var_mat, V_base):
 
 
 
-def basis_corr(f, method = 'sparcc', **kwargs):
+def basis_corr(f, method='sparcc', **kwargs):
     '''
     Estimate the correlations of the basis of the closed data x.
     Assumes that the correlations are sparse (mean correlation is small).
@@ -151,11 +181,15 @@ def basis_corr(f, method = 'sparcc', **kwargs):
     Var_mat = f.variation_mat(shrink = shrink)
     ## compute basis variances & correlations
     if method == 'clr':
+        if k<4: 
+            raise ValueError, 'Can not detect correlations between compositions of <4 components (%d given)' %k 
         z        = f.clr(**kwargs)
         Cov_base = cov(z, rowvar = 0)
         C_base   = corrcoef(z, rowvar = 0)
         V_base   = diag(Cov_base)
-    elif method == 'sparcc':   
+    elif method == 'sparcc':
+        if k<4: 
+            raise ValueError, 'Can not detect correlations between compositions of <4 components (%d given)' %k   
         V_base, M        = basis_var(f, Var_mat)
         C_base, Cov_base = C_from_V(Var_mat, V_base)
         iter     = kwargs.get('xiter', 10)
@@ -174,7 +208,7 @@ def basis_corr(f, method = 'sparcc', **kwargs):
     return V_base, C_base, Cov_base 
 
 
-def main(counts, algo = 'SparCC', **kwargs):
+def main(counts, algo='SparCC', **kwargs):
     '''
     Compute correlations between all components of counts matrix.
     
@@ -237,6 +271,12 @@ if __name__ == '__main__':
     x = np.arange(1,10)
     y = np.ones(len(x))
     X = np.c_[x,y]
-    X = np.random.rand(200,5)
-    cor,cov =  main(X, 'kendall', oprint=0)  
+    X = np.random.rand(200,3)
+    cor,cov =  main(X, 'clr', oprint=0)  
     print cor      
+
+    x = array([[1.,1,1],[1,2,3]])*1
+    print comp_fractions(x, method='normalize')
+    print comp_fractions(x, method='pseudo')
+    print comp_fractions(x)    
+
