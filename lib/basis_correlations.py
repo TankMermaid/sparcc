@@ -55,6 +55,8 @@ def comp_fractions(counts, method='dirichlet', **kwargs):
     elif method is 'pseudo': 
             p_counts = kwargs.pop('p_counts',1)
             fracs = comp_fractions(counts+p_counts, method='normalize')
+    else: 
+        raise ValueError, 'Unsupported method "%s"' %method
     return fracs
 
 
@@ -228,26 +230,30 @@ def main(counts, algo='SparCC', **kwargs):
         Estimated covariance matrix if algo in {SparCC, clr},
         None otherwise.
               
-    =======   ============ =======  ================================================
-    kwarg     Accepts      Default  Desctiption
-    =======   ============ =======  ================================================
-    iter      int          20       number of estimation iteration to average over.
-    oprint    bool         True     print iteration progress?
-    th        0<th<1       0.1      exclusion threshold for SparCC.
-    xiter     int          10       number of exclusion iterations for sparcc.
-    =======   ============          ================================================
+    =======   ============ =======   ================================================
+    kwarg     Accepts      Default   Desctiption
+    =======   ============ =======   ================================================
+    iter      int          20        number of estimation iteration to average over.
+    oprint    bool         True      print iteration progress?
+    th        0<th<1       0.1       exclusion threshold for SparCC.
+    xiter     int          10        number of exclusion iterations for sparcc.
+    norm      str          dirichlet method used to normalize the counts to fractions.
+    log       bool         True      log-transform fraction? used if algo ~= SparCC/CLR
+    =======   ============ ========= ================================================
     '''
     algo = algo.lower()
-    cor_list  = []  # list of cor matrices from different random fractions
-    var_list  = []  # list of cov matrices from different random fractions
-    oprint    = kwargs.pop('oprint',True)
-    iter      = kwargs.pop('iter',20)  # number of iterations 
-    th        = kwargs.pop('th',0.1)   # exclusion threshold for iterative sparse algo
+    cor_list = []  # list of cor matrices from different random fractions
+    var_list = []  # list of cov matrices from different random fractions
+    oprint   = kwargs.pop('oprint',True)
+    iter     = kwargs.pop('iter',20)  # number of iterations 
+    th       = kwargs.pop('th',0.1)   # exclusion threshold for iterative sparse algo
+    norm     = kwargs.pop('norm','dirichlet')
+    log      = kwargs.pop('log','True')
     if algo in ['sparcc', 'clr']: 
         for i in range(iter):
             if oprint: print '\tRunning iteration ' + str(i)
-            fracs = comp_fractions(counts)
-            v_sparse, cor_sparse, cov_sparse = fracs.basis_corr(method = algo, **kwargs)
+            fracs = comp_fractions(counts, method=norm)
+            v_sparse, cor_sparse, cov_sparse = fracs.basis_corr(method=algo, **kwargs)
             var_list.append(np.diag(cov_sparse))
             cor_list.append(cor_sparse)
         cor_array = np.array(cor_list)
@@ -258,8 +264,12 @@ def main(counts, algo='SparCC', **kwargs):
     elif algo in ['pearson', 'kendall', 'spearman']:
         for i in range(iter):
             if oprint: print '\tRunning iteration ' + str(i)
-            fracs = comp_fractions(counts)               
-            cor_mat, pval = correlation(fracs, algo)
+            fracs = comp_fractions(counts)
+            if log:
+                x = np.log(fracs)
+            else:
+                x = fracs
+            cor_mat, pval = correlation(x, algo)
             cor_list.append(cor_mat)
         cor_array   = np.array(cor_list)
         cor_med = np.median(cor_array,axis = 0) #median correlation
@@ -268,15 +278,15 @@ def main(counts, algo='SparCC', **kwargs):
 
 
 if __name__ == '__main__':
-    x = np.arange(1,10)
-    y = np.ones(len(x))
-    X = np.c_[x,y]
-    X = np.random.rand(200,3)
-    cor,cov =  main(X, 'clr', oprint=0)  
-    print cor      
+#    x = np.arange(1,10)
+#    y = np.ones(len(x))
+#    X = np.c_[x,y]
+#    X = np.random.rand(200,3)
+#    cor,cov =  main(X, 'clr', oprint=0)  
+#    print cor      
 
     x = array([[1.,1,1],[1,2,3]])*1
     print comp_fractions(x, method='normalize')
     print comp_fractions(x, method='pseudo')
-    print comp_fractions(x)    
+    print comp_fractions(x, 'methodX')    
 
