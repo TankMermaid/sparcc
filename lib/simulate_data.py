@@ -7,7 +7,6 @@ Methods for creating fake HMP like data.
 '''
 import numpy as np
 import cPickle as pickle
-import matplotlib.pyplot as plt
 from SurveyMatrix import Survey_matrix
 #from estimate_dist import estimate
 #from numpy.random.mtrand import dirichlet
@@ -137,6 +136,7 @@ def simulate(original, sim_fun, num_sim = 1e3, a = None, symmetric = True):
  
  
 def test_dirichlet():
+    import matplotlib.pyplot as plt
     N = 100
     n = 200
     k = 50

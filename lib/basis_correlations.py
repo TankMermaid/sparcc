@@ -68,23 +68,25 @@ def correlation(x, type):
     import scipy.stats as stats
     type = type.lower()
     if type not in set(['pearson', 'kendall', 'spearman']): raise IOError('Specified correlation type is not supported.')
-    if type == 'pearson'  : corr_fun = stats.pearsonr
-    elif type == 'kendall': corr_fun = stats.kendalltau
-    elif type == 'spearman' : corr_fun = stats.spearmanr
-    m,n = np.shape(x)
-    c_mat = np.zeros((n, n))
-    p_mat = np.zeros((n, n))
-    for i in xrange(n):
-        for j in xrange(i, n):
-            if i == j: 
-                c_mat[i][i] = 1
-                p_mat[i][i] = 1
-                continue
-            c_temp, p_temp = corr_fun(x[:,i], x[:,j])
-            c_mat[i][j] = c_temp
-            c_mat[j][i] = c_temp
-            p_mat[i][j] = p_temp
-            p_mat[j][i] = p_temp
+    if type == 'spearman' : 
+        c_mat, p_mat = stats.spearmanr(x)
+    else:
+        if type == 'pearson'  : corr_fun = stats.pearsonr
+        elif type == 'kendall': corr_fun = stats.kendalltau
+        m,n = np.shape(x)
+        c_mat = np.zeros((n, n))
+        p_mat = np.zeros((n, n))
+        for i in xrange(n):
+            for j in xrange(i, n):
+                if i == j: 
+                    c_mat[i][i] = 1
+                    p_mat[i][i] = 1
+                    continue
+                c_temp, p_temp = corr_fun(x[:,i], x[:,j])
+                c_mat[i][j] = c_temp
+                c_mat[j][i] = c_temp
+                p_mat[i][j] = p_temp
+                p_mat[j][i] = p_temp
     return c_mat, p_mat
 
 
@@ -264,12 +266,12 @@ def main(counts, algo='SparCC', **kwargs):
     elif algo in ['pearson', 'kendall', 'spearman']:
         for i in range(iter):
             if oprint: print '\tRunning iteration ' + str(i)
-            fracs = comp_fractions(counts)
+            fracs = comp_fractions(counts, method=norm)
             if log:
                 x = np.log(fracs)
             else:
                 x = fracs
-            cor_mat, pval = correlation(x, algo)
+            cor_mat, pval = correlation(array(x), algo)
             cor_list.append(cor_mat)
         cor_array   = np.array(cor_list)
         cor_med = np.median(cor_array,axis = 0) #median correlation
