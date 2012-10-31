@@ -80,8 +80,8 @@ Remember to make sure all the correlation files are in the same folder, are numb
 The following will compute both one and two sided p-values.
 ::
 
-   python PseudoPvals.py example/basis_corr/cor_sparcc.txt example/pvals/sim_cor 5 -o example/pvals/pvals_one_sided.txt -t 'one_sided'
-   python PseudoPvals.py example/basis_corr/cor_sparcc.txt example/pvals/sim_cor 5 -o example/pvals/pvals_two_sided.txt -t 'two_sided'
+   python PseudoPvals.py example/basis_corr/cor_sparcc.out example/pvals/sim_cor 5 -o example/pvals/pvals_one_sided.txt -t 'one_sided'
+   python PseudoPvals.py example/basis_corr/cor_sparcc.out example/pvals/sim_cor 5 -o example/pvals/pvals_two_sided.txt -t 'two_sided'
 
 
 ---------------------------------

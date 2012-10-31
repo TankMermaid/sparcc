@@ -54,12 +54,12 @@ if __name__ == '__main__':
     from optparse import OptionParser
     kwargs = {}
     usage  = ('Compute pseudo p-vals from a set correlations obtained from shuffled data.\n' 
-              'Pseudo p-vals are the precentage of times a corrleation at least as extreme as the "real" one was observed in simulated datasets. \n'
+              'Pseudo p-vals are the percentage of times a correlation at least as extreme as the "real" one was observed in simulated datasets. \n'
               'p-values can be either two-sided (considering only the correlation magnitude) or one-sided (accounting for the sign of correlations).\n'
               'Files containing the simulated correlations should be named [prefix]_[num].txt. The naming prefix is the second input argument, and the total number of simulated sets is the third.\n'
               '\n'
               'Usage:   python PseudoPvals.py real_cor_file sim_cor_file_prefix num_simulations [options]\n'
-              'Example: python PseudoPvals.py example/basis_corr/cor_mat_sparcc.out example/pvals/sim_cor 5 -o pals.txt -t one_sided')
+              'Example: python PseudoPvals.py example/basis_corr/cor_mat_sparcc.out example/pvals/sim_cor 5 -o pvals.txt -t one_sided')
     parser = OptionParser(usage)
     parser.add_option("-t", "--type", dest="type", type = 'str',
                       action="callback", callback= kwargs_callback, callback_kwargs = {'d':kwargs}, 
