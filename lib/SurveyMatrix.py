@@ -39,7 +39,7 @@ class Survey_matrix(MatrixDictionary):
         Create object from data file.
         File header is sample ids, each row starts with otu id.
         '''
-        f       = open(file,'r')
+        f       = open(file,'rU')
         header  = f.readline()
         cols    = header.strip().split('\t')[1:]
         rows    = []
