@@ -106,7 +106,7 @@ def exclude_pairs(C, M, th=0.1, excluded=None):
     break_flag = False
     C_temp = abs(C - diag(diag(C)) )
     if excluded is not None: C_temp[excluded] = 0 # set previously excluded correlations to 0.
-    temp    = where(C_temp == C_temp.max())
+    temp    = [np.atleast_2d(r) for r in where(C_temp == C_temp.max())]
     i       = temp[0][0,1]
     j       = temp[1][0,1]
     exclude = (np.matrix([i,j]), np.matrix([j,i]))
