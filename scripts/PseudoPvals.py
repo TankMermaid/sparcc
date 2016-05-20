@@ -10,7 +10,7 @@ import numpy as np
 
 from copy import deepcopy
 from itertools import combinations
-from lib.MatrixDictionary import MatrixDictionary as MD
+from sparcc.MatrixDictionary import MatrixDictionary as MD
 
 def kwargs_callback(option, opt, value, parser,**kwargs):
     d = kwargs['d']

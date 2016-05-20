@@ -9,7 +9,7 @@ Requires the scipy.cluster.hierarchy module!
 '''
 
 
-from lib.SurveyMatrix import Survey_matrix as SM
+from sparcc.SurveyMatrix import Survey_matrix as SM
 
     
 def kwargs_callback(option, opt, value, parser,**kwargs):
