@@ -613,7 +613,6 @@ class MatrixDictionary(dict):
         '''
         from simulate_data import permute_w_replacement as pwr
         if method is 'permute': sim_fun = pwr
-        sims = []
         for i in xrange(n):
             sim = sim_fun(self)
             if base_file: # save simulated data
@@ -625,8 +624,7 @@ class MatrixDictionary(dict):
                     sim.save(file)
                 else:
                     raise ValueError('Unkown format %s' %format)              
-            sims.append(sim)
-        return sims
+        
                     
 
 def test_c_means():
