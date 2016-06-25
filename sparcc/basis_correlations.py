@@ -5,6 +5,8 @@ Created on Nov 5, 2010
 
 Module for estimating the correlations in the basis when only compositional data is available.
 '''
+import sys
+
 
 import numpy as np
 from numpy import array, zeros, tile, ones, log, corrcoef, var, exp, cov, r_, diag, matrix, diag, sqrt, where
@@ -255,6 +257,7 @@ def main(counts, algo='SparCC', **kwargs):
         for i in range(iter):
             if oprint: print '\tRunning iteration ' + str(i)
             fracs = comp_fractions(counts, method=norm)
+            sys.stdout.flush()
             v_sparse, cor_sparse, cov_sparse = fracs.basis_corr(method=algo, **kwargs)
             var_list.append(np.diag(cov_sparse))
             cor_list.append(cor_sparse)
